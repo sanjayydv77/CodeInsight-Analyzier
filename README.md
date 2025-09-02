@@ -41,8 +41,5 @@ App runs on http://localhost:8080 (single-port dev). Hot reload for client and s
 - server/ – Express routes (e.g., POST /api/analyze)
 - shared/ – Types shared by client and server
 
-## Deployment
-Connect to Netlify or Vercel and deploy from your GitHub repo. The app builds with `pnpm build`.
-
 ## License
 This is a proprietary project. Copyright © 2025 Sanjay Yadav. All rights reserved. Redistribution, modification, and commercial use are prohibited without written permission.
