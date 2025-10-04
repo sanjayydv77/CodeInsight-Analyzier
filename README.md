@@ -2,7 +2,7 @@
 
 Advanced, real‑time code analysis for 10+ languages with live reports, issue detection, and actionable suggestions.
 **Live Demo & Repository**  
-[Try it live → codeinsight-analyzer.netlify.netlify.app](https://codeinsight-analyzer.netlify.app/)  
+[Try it live → codeinsight analyzer ](https://codeinsight-analyzer.netlify.app/)  
 [Source code on GitHub → sanjayydv77/CodeInsight-Analyzier](https://github.com/sanjayydv77/CodeInsight-Analyzier)
 - Author: Sanjay Yadav
 - Email: sanjuydv5357@gmail.com
