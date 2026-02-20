@@ -5,6 +5,8 @@ import {
   AnalysisIssue,
   ComplexityMetrics,
 } from "@shared/api";
+import { analyzeCodeWithAI } from "../services/ai-service";
+import { parseJavaScript, parsePython } from "../services/syntax-parser";
 
 function countMatches(src: string, re: RegExp): number {
   const m = src.match(re);
@@ -441,7 +443,7 @@ function analyzeJsTs(code: string): AnalysisIssue[] {
   return issues;
 }
 
-export const handleAnalyze: RequestHandler = (req, res) => {
+export const handleAnalyze: RequestHandler = async (req, res) => {
   const started = Date.now();
   const { code, language } = req.body as AnalyzeRequest;
 
@@ -453,14 +455,55 @@ export const handleAnalyze: RequestHandler = (req, res) => {
   const sanitized = sanitizeCode(code, lang);
 
   const issues: AnalysisIssue[] = [];
+  let syntaxValid = true;
+
+  // Enhanced syntax checking with AST parsing
+  if (lang === "javascript" || lang === "typescript") {
+    const parseResult = parseJavaScript(code, lang === "typescript");
+    if (!parseResult.success) {
+      syntaxValid = false;
+      parseResult.errors.forEach(err => {
+        issues.push({
+          message: err.message,
+          line: err.line,
+          severity: err.severity,
+        });
+      });
+    }
+    parseResult.warnings.forEach(warn => {
+      issues.push({
+        message: warn.message,
+        line: warn.line,
+        severity: warn.severity,
+      });
+    });
+  } else if (lang === "python") {
+    const parseResult = parsePython(code);
+    if (!parseResult.success) {
+      syntaxValid = false;
+      parseResult.errors.forEach(err => {
+        issues.push({
+          message: err.message,
+          line: err.line,
+          severity: err.severity,
+        });
+      });
+    }
+    parseResult.warnings.forEach(warn => {
+      issues.push({
+        message: warn.message,
+        line: warn.line,
+        severity: warn.severity,
+      });
+    });
+  }
+
+  // Original analysis
   issues.push(...checkBalance(sanitized));
   issues.push(...detectUnterminatedString(code, lang));
   issues.push(...lineIssues(code));
 
   if (lang === "javascript" || lang === "typescript") {
-    if (/console\.log\(/.test(sanitized)) {
-      issues.push({ message: "Avoid leaving console.log in production code.", severity: "info" });
-    }
     issues.push(...analyzeJsTs(sanitized));
   } else if (lang === "python") {
     issues.push(...analyzePython(code));
@@ -483,12 +526,34 @@ export const handleAnalyze: RequestHandler = (req, res) => {
   const metrics = computeMetrics(sanitized);
   const suggestions = suggestFromMetrics(metrics, lang);
 
+  // AI Analysis
+  let aiResult = null;
+  const aiStarted = Date.now();
+  
+  try {
+    aiResult = await analyzeCodeWithAI(code, lang, issues, metrics);
+  } catch (error) {
+    console.error("AI analysis failed:", error);
+  }
+
+  const aiMs = Date.now() - aiStarted;
+
   const response: AnalyzeResponse = {
     issues,
     metrics,
     suggestions,
-    ai: { enabled: false },
-    timings: { analysisMs: Date.now() - started },
+    syntaxValid,
+    ai: aiResult ? {
+      enabled: true,
+      model: "gpt-4o-mini",
+      ...aiResult,
+    } : {
+      enabled: false,
+    },
+    timings: { 
+      analysisMs: Date.now() - started,
+      aiMs: aiResult ? aiMs : undefined,
+    },
   };
 
   res.json(response);

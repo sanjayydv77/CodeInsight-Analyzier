@@ -9,12 +9,16 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Button } from "@/components/ui/button";
-import { Mail } from "lucide-react";
+import { Mail, Moon, Sun } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
+import { ThemeProvider, useTheme } from "@/components/theme-provider";
 
 const queryClient = new QueryClient();
 
-const Layout = ({ children }: { children: React.ReactNode }) => (
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  const { theme, setTheme } = useTheme();
+  
+  return (
   <div className="min-h-screen flex flex-col">
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container h-16 flex items-center justify-between">
@@ -28,6 +32,18 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
           <a href="#analyze" className="hover:text-foreground">Analyze</a>
         </nav>
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </Button>
           <a
             href="#analyze"
             className="hidden sm:inline-flex"
@@ -111,22 +127,25 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
     </footer>
   </div>
 );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider defaultTheme="dark" storageKey="codeinsight-theme">
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

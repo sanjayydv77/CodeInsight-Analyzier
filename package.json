@@ -21,8 +21,13 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@babel/parser": "^7.29.0",
+    "@babel/traverse": "^7.29.0",
+    "@monaco-editor/react": "^4.7.0",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "monaco-editor": "^0.55.1",
+    "openai": "^6.22.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {

@@ -42,16 +42,24 @@ export interface ComplexityMetrics {
   maintainability: number; // 0-100 (higher is better)
 }
 
+export interface AIAnalysis {
+  enabled: boolean;
+  model?: string;
+  summary?: string;
+  securityIssues?: string[];
+  refactoringSuggestions?: string[];
+  bestPractices?: string[];
+  explanation?: string;
+}
+
 export interface AnalyzeResponse {
   issues: AnalysisIssue[];
   metrics: ComplexityMetrics;
   suggestions: string[];
-  ai?: {
-    enabled: boolean;
-    model?: string;
-    summary?: string;
-  };
+  ai?: AIAnalysis;
+  syntaxValid: boolean;
   timings: {
     analysisMs: number;
+    aiMs?: number;
   };
 }
