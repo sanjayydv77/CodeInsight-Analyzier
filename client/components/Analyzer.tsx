@@ -18,6 +18,14 @@ import Editor from "@monaco-editor/react";
 import { useTheme } from "./theme-provider";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const LANGUAGES: SupportedLanguage[] = [
   "javascript",
@@ -62,6 +70,24 @@ export function Analyzer() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
+  
+  // Welcome dialog state - shows on every visit
+  const [showWelcome, setShowWelcome] = useState(true);
+
+  const handleCloseWelcome = () => {
+    setShowWelcome(false);
+  };
+
+  // Auto-dismiss welcome screen after 2 seconds
+  useEffect(() => {
+    if (showWelcome) {
+      const timer = setTimeout(() => {
+        setShowWelcome(false);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showWelcome]);
 
   const analyze = async () => {
     const trimmed = code.trim();
@@ -105,7 +131,61 @@ export function Analyzer() {
   }, [result?.metrics.score]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <>
+      {/* Welcome Dialog */}
+      <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
+        <DialogContent 
+          className="sm:max-w-[500px] bg-gradient-to-br from-background via-background to-primary/10 border-primary/20 cursor-pointer"
+          onClick={handleCloseWelcome}
+        >
+          <DialogHeader className="space-y-4">
+            <div className="flex flex-col items-center text-center space-y-3">
+              <Avatar className="h-20 w-20 border-2 border-primary">
+                <AvatarImage src="/sanjay-profile.jpg" alt="SANJAY YADAV" />
+                <AvatarFallback className="text-2xl font-bold bg-primary text-primary-foreground">SY</AvatarFallback>
+              </Avatar>
+              <div>
+                <DialogTitle className="text-3xl font-extrabold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                  Welcome to Codeinsight-Analyzer
+                </DialogTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Built with care by SANJAY YADAV
+                </p>
+              </div>
+            </div>
+            <DialogDescription className="text-center space-y-4">
+              <p className="text-base">
+                Analyze code in real-time with AI-powered live suggestions and quality checks.
+              </p>
+              <ul className="text-left space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary font-bold">•</span>
+                  <span><strong>Supports 10+ languages:</strong> JS, TS, Python, Java, C#, C++, Go, Rust, PHP, Ruby</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary font-bold">•</span>
+                  <span><strong>Instant metrics:</strong> Score, Cyclomatic, Lines, Functions</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary font-bold">•</span>
+                  <span><strong>Privacy-friendly,</strong> runs securely with fast responses</span>
+                </li>
+              </ul>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center pt-4">
+            <Button 
+              onClick={handleCloseWelcome} 
+              size="lg" 
+              className="w-full sm:w-auto px-12 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+            >
+              TRY
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <div className="grid gap-6 lg:grid-cols-2">
       <Card className="relative overflow-hidden">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -359,6 +439,7 @@ export function Analyzer() {
         </Card>
       </div>
     </div>
+    </>
   );
 }
 
